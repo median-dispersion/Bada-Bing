@@ -1,0 +1,6 @@
+# Ignore temporary python files and directories
+__venv__
+__pycache__
+
+# Ignore the default image output directory
+Images
