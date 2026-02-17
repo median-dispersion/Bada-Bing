@@ -8,7 +8,7 @@ import json
 def sanitize_filename(filename: str) -> str:
 
     # Keep only allowed characters (A-Z, a-z, 0-9, "_", "-", " ")
-    filename = re.sub(r"[^A-Za-z0-9_\-\. ]+", " ", filename)
+    filename = re.sub(r"[^A-Za-z0-9_\-\. ]+", "_", filename)
 
     # Replace runs of 2+ whitespace characters with a single space
     filename = re.sub(r"\s{2,}", " ", filename)
@@ -26,7 +26,7 @@ def save_image_data(
     data: dict,
     directory: Path,
     save_metadata: bool = True
-):
+) -> None:
 
     # Generate the sanitized filename
     filename = sanitize_filename(f"{data['title']} - {data['copyright']} - Form {data['start_date']} to {data['end_date']}")

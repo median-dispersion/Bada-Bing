@@ -4,3 +4,6 @@ __pycache__
 
 # Ignore the default image output directory
 Images
+
+# Ignore SQLite3 database files
+*.db
