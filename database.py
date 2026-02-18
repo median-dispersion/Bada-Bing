@@ -55,8 +55,8 @@ def initialize_database() -> None:
         session.execute("""
             CREATE TABLE IF NOT EXISTS status (
                 id INTEGER NOT NULL PRIMARY KEY,
-                last_start_date_value TEXT NOT NULL,
-                last_update_date TEXT NOT NULL
+                start_date_value TEXT NOT NULL,
+                update_date TEXT NOT NULL
             );
         """)
 
@@ -64,12 +64,33 @@ def initialize_database() -> None:
         session.execute("""
             INSERT OR IGNORE INTO status (
                 id,
-                last_start_date_value,
-                last_update_date
+                start_date_value,
+                update_date
             )
             VALUES (
                 1,
                 "0",
                 "2000-01-01T00:00:00.000000+00:00"
+            );
+        """)
+
+        # Create images table
+        session.execute("""
+            CREATE TABLE IF NOT EXISTS images (
+                id INTEGER NOT NULL PRIMARY KEY,
+                url TEXT NOT NULL,
+                title TEXT NOT NULL,
+                copyright TEXT NOT NULL,
+                copyright_url TEXT NOT NULL,
+                region TEXT NOT NULL,
+                start_date TEXT NOT NULL,
+                full_start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                resolution TEXT NOT NULL,
+                file_format TEXT NOT NULL,
+                download_date TEXT NOT NULL,
+                checksum_sha256 TEXT NOT NULL,
+                image_path TEXT,
+                metadata_path TEXT
             );
         """)

@@ -22,8 +22,8 @@ if __name__ == "__main__":
     # If not running in daemon mode
     else:
 
-        # Get metadata
-        metadata = get_metadata(
+        # Get the metadata
+        data = get_metadata(
             arguments.region,
             arguments.day_index,
             arguments.number_of_images,
@@ -32,28 +32,25 @@ if __name__ == "__main__":
             arguments.request_attempt_delay_seconds
         )
 
-        # List of image data
-        image_data = []
+        # For every entry in the data list
+        for data_entry in data:
 
-        # For every entry in the list of metadata
-        for metadata_entry in metadata:
-
-            # Add image data to the list of image data
-            image_data.append(get_image_data(
-                metadata_entry,
+            # Add image data to the entry
+            get_image_data(
+                data_entry,
                 arguments.resolution,
                 arguments.file_format,
                 arguments.request_timeout_seconds,
                 arguments.request_attempts,
                 arguments.request_attempt_delay_seconds
-            ))
+            )
 
-        # For every entry in the list of image data
-        for image_data_entry in image_data:
+        # For every entry in the data list
+        for data_entry in data:
 
             # Save the image data to disk
             save_image_data(
-                image_data_entry,
+                data_entry,
                 arguments.image_directory,
                 arguments.save_metadata
             )

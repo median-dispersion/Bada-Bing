@@ -1,6 +1,8 @@
 from enumerators import Region, Resolution, FileFormat
 import requests
 import time
+from datetime import datetime
+from hashlib import sha256
 
 # =================================================================================================
 # Get metadata
@@ -33,24 +35,24 @@ def get_metadata(
             # Request metadata
             response = requests.get(url=url, params=parameters, timeout=timeout_seconds)
             response.raise_for_status()
-            data = response.json()
+            response_data = response.json()
 
             # List of metadata
             metadata = []
 
             # Extract metadata from response
-            for entry in data["images"]:
+            for data_entry in response_data["images"]:
 
                 # Add the extracted metadata
                 metadata.append({
-                    "url": f"https://www.bing.com{entry['urlbase']}",
-                    "title": entry["title"],
-                    "copyright": entry["copyright"],
-                    "copyright_url": entry["copyrightlink"],
+                    "url": f"https://www.bing.com{data_entry['urlbase']}",
+                    "title": data_entry["title"],
+                    "copyright": data_entry["copyright"],
+                    "copyright_url": data_entry["copyrightlink"],
                     "region": region,
-                    "start_date": entry["startdate"],
-                    "full_start_date": entry["fullstartdate"],
-                    "end_date": entry["enddate"]
+                    "start_date": data_entry["startdate"],
+                    "full_start_date": data_entry["fullstartdate"],
+                    "end_date": data_entry["enddate"]
                 })
 
             # Return the extracted metadata
@@ -69,7 +71,7 @@ def get_metadata(
 # Get image data
 # =================================================================================================
 def get_image_data(
-    metadata: dict,
+    data: dict,
     resolution: Resolution = Resolution.PIXEL_3840_2160,
     file_format: FileFormat = FileFormat.JPG,
     timeout_seconds: int = 10,
@@ -78,10 +80,9 @@ def get_image_data(
 ) -> dict:
 
     # Image URL
-    url = f"{metadata['url']}_{resolution.value}.{file_format.value}"
+    url = f"{data['url']}_{resolution.value}.{file_format.value}"
 
-    # Image data
-    data = metadata
+    # Add to image data
     data["url"] = url
     data["resolution"] = resolution
     data["file_format"] = file_format
@@ -97,6 +98,12 @@ def get_image_data(
 
             # Add the image to the image data
             data["image"] = response.content
+
+            # Add the download date to the image data
+            data["download_date"] = datetime.now().astimezone().isoformat()
+
+            # Add image data SHA-256 checksum
+            data["checksum_sha256"] = sha256(data["image"]).hexdigest()
 
             # Return the image data
             return data

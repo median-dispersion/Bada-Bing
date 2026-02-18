@@ -102,16 +102,14 @@ def get_arguments() -> argparse.Namespace:
 
     parser.add_argument(
         "--save_metadata",
-        type = bool,
-        choices = [True, False],
-        default = True,
-        help = "Controls if the image metadata should be saved in an accompanying JSON file. The default value is True."
+        action="store_true",
+        help = "Set this flag if the image metadata should be saved in an accompanying JSON file."
     )
 
     parser.add_argument(
         "--daemon",
         action="store_true",
-        help = "Run continuously in daemon mode, repeatedly checking and downloading new images at the specified update interval until terminated."
+        help = "Set this flag to run continuously in daemon mode, repeatedly checking and downloading new images at the specified update interval until terminated."
     )
 
     parser.add_argument(
