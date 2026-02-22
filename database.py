@@ -55,6 +55,7 @@ def initialize_database() -> None:
         session.execute("""
             CREATE TABLE IF NOT EXISTS status (
                 id INTEGER NOT NULL PRIMARY KEY,
+                version INTEGER NOT NULL,
                 start_date_value TEXT NOT NULL,
                 update_date TEXT NOT NULL
             );
@@ -64,13 +65,15 @@ def initialize_database() -> None:
         session.execute("""
             INSERT OR IGNORE INTO status (
                 id,
+                version,
                 start_date_value,
                 update_date
             )
             VALUES (
                 1,
-                "0",
-                "2000-01-01T00:00:00.000000+00:00"
+                1,
+                '0',
+                '2000-01-01T00:00:00.000000+00:00'
             );
         """)
 

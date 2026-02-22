@@ -3,21 +3,36 @@ from enumerators import Region, Resolution, FileFormat
 from pathlib import Path
 
 # =================================================================================================
-# Positive integer launch argument type
+# Constrained integer argument type
 # =================================================================================================
-def positive_integer(value: str) -> int:
+def constrained_integer_type(
+    minimum: int | None = None,
+    maximum: int | None = None
+):
 
-    # Parse the value as an integer
-    value = int(value)
+    # Factory validator function
+    def validator(value):
 
-    # If the integer is not positive
-    if value < 1:
+        # Try to parse the value as an integer
+        value = int(value)
 
-        # Raise an exception
-        raise argparse.ArgumentTypeError(f"{value} is invalid; value must be greater than or equal to 1!")
+        # Check if a minimum is set and if value falls short of the minimum
+        if minimum is not None and value < minimum:
 
-    # Return the positive integer
-    return value
+            # Raise an exception
+            raise argparse.ArgumentTypeError(f"{value} is an invalid input value; it must be at least {minimum}!")
+
+        # Check if a maximum is set and if the value exceeds the maximum
+        if maximum is not None and value > maximum:
+
+            # Raise an exception
+            raise argparse.ArgumentTypeError(f"{value} is an invalid input value; it must be no more than {maximum}!")
+
+        # Return constrained integer
+        return value
+
+    # Return the validator function
+    return validator
 
 # =================================================================================================
 # Get launch arguments
@@ -74,21 +89,21 @@ def get_arguments() -> argparse.Namespace:
 
     parser.add_argument(
         "--request_timeout_seconds",
-        type = positive_integer,
+        type = constrained_integer_type(1),
         default = 10,
         help = "Sets the number of seconds before a request times out. The default value is 10 seconds."
     )
 
     parser.add_argument(
         "--request_attempts",
-        type = positive_integer,
+        type = constrained_integer_type(1),
         default = 10,
         help = "Sets the number of attempts before a request fails. The default value is 10."
     )
 
     parser.add_argument(
         "--request_attempt_delay_seconds",
-        type = positive_integer,
+        type = constrained_integer_type(1),
         default = 1,
         help = "Sets the number of seconds in between request attempts. The default is 1 second."
     )
@@ -114,16 +129,23 @@ def get_arguments() -> argparse.Namespace:
 
     parser.add_argument(
         "--update_hours",
-        type = positive_integer,
+        type = constrained_integer_type(1),
         default = 12,
         help = "Sets the number of hours in between update attempts. Only applies when --daemon is set. The default is 12 hours."
     )
 
     parser.add_argument(
         "--update_failure_timeout_hours",
-        type = positive_integer,
+        type = constrained_integer_type(1),
         default = 1,
         help = "Sets the number of hours to wait until the next update if the previous update failed. Only applies when --daemon is set. The default is 1 hour."
+    )
+
+    parser.add_argument(
+        "--keep_images",
+        type = constrained_integer_type(0),
+        default = -1, # Any value < 0 = Keep all files
+        help = "Sets the number of downloaded images to keep. If set to 0, it keeps no images; if set to 1, it keeps today's image; if set to 2, it keeps today's and yesterday's image, and so on. Only applies when --daemon is set. The default unset value is to keep all images."
     )
 
     # Return the parsed arguments

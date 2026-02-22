@@ -3,40 +3,16 @@ from database import get_session
 from datetime import datetime
 import time
 from bing import get_metadata, get_image_data
-from files import save_image_data
+from files import save_image_data, delete_image_data
+from pathlib import Path
 
 # =================================================================================================
 # Run the daemon loop
 # =================================================================================================
-def run_daemon(arguments: Namespace) -> None:
-
-    # Get a database session
-    with get_session() as session:
-
-        # Select the latest status from the database
-        status = session.execute("""
-            SELECT start_date_value, update_date
-            FROM status
-            WHERE id = (SELECT MAX(id) FROM status);
-        """).fetchone()
-
-    # Extract the start date value from the status
-    start_date_value = status["start_date_value"]
-
-    # Extract the update date from the status
-    update_date = datetime.fromisoformat(status["update_date"])
-
-    # Calculate how long ago the last update was in seconds
-    seconds_since_update = (datetime.now().astimezone() - update_date).total_seconds()
-
-    # Get the update interval in seconds
-    update_interval_seconds = arguments.update_hours * 3600
-
-    # Check if the update interval since the last update has not been reached
-    if seconds_since_update < update_interval_seconds:
-
-        # Delay the next update by the remaining time until the update interval has been reached
-        time.sleep(update_interval_seconds - seconds_since_update)
+def run_daemon(
+    arguments: Namespace,
+    start_date_value: str
+) -> None:
 
     # Loop forever
     while True:
@@ -75,7 +51,7 @@ def run_daemon(arguments: Namespace) -> None:
 
                 # Update values
                 start_date_value = data["start_date"]
-                update_date = datetime.now().astimezone()
+                update_date = datetime.now().astimezone().isoformat()
 
                 # Get a database session
                 with get_session() as session:
@@ -89,7 +65,7 @@ def run_daemon(arguments: Namespace) -> None:
                         """,
                         (
                             start_date_value,
-                            update_date.isoformat()
+                            update_date
                         )
                     )
 
@@ -132,6 +108,62 @@ def run_daemon(arguments: Namespace) -> None:
                         )
                     )
 
+                    # Get the total number of downloaded images
+                    downloaded_images = session.execute("""
+                        SELECT COUNT(image_path) AS downloaded_images
+                        FROM images;
+                    """).fetchone()["downloaded_images"]
+
+                # Check if only a specific number of images should be kept
+                # And if the number of downloaded images exceeds that number
+                if arguments.keep_images > -1 and arguments.keep_images < downloaded_images:
+
+                    # Calculate the number of images that need to be deleted
+                    images_to_delete = downloaded_images - arguments.keep_images
+
+                    # Get a database session
+                    with get_session() as session:
+
+                        # Select the number of images that need to be deleted ordered by download date
+                        data_to_delete = session.execute(
+                            """
+                                SELECT id, checksum_sha256, image_path, metadata_path
+                                FROM images
+                                WHERE image_path IS NOT NULL
+                                ORDER BY download_date ASC
+                                LIMIT ?;
+                            """,
+                            (images_to_delete,)
+                        ).fetchall()
+
+                        # Get the ids of rows that need to be updated
+                        ids_to_update = [(entry["id"],) for entry in data_to_delete]
+
+                        # Set the image_path and metadata_path to NULL for all images that should be deleted
+                        session.executemany(
+                            """
+                                UPDATE images
+                                SET image_path = NULL, metadata_path = NULL
+                                WHERE id = ?;
+                            """,
+                            ids_to_update
+                        )
+
+                    # For ever image in the data that should be deleted
+                    for image_data_to_delete in data_to_delete:
+
+                        # Extract the values
+                        image_path = Path(image_data_to_delete["image_path"])
+                        checksum_sha256 = image_data_to_delete["checksum_sha256"]
+                        metadata_path = Path(image_data_to_delete["metadata_path"]) if image_data_to_delete["metadata_path"] is not None else None
+
+                        # Delete the image data from disk
+                        delete_image_data(
+                            image_path,
+                            checksum_sha256,
+                            metadata_path
+                        )
+
             # Sleep until the next update
             time.sleep(arguments.update_hours * 3600)
 
@@ -140,3 +172,39 @@ def run_daemon(arguments: Namespace) -> None:
 
             # Retry after the failure timeout
             time.sleep(arguments.update_failure_timeout_hours * 3600)
+
+# =================================================================================================
+# Start the daemon
+# =================================================================================================
+def start_daemon(arguments: Namespace) -> None:
+
+    # Get a database session
+    with get_session() as session:
+
+        # Select the latest status from the database
+        status = session.execute("""
+            SELECT start_date_value, update_date
+            FROM status
+            WHERE id = (SELECT MAX(id) FROM status);
+        """).fetchone()
+
+    # Extract the start date value from the status
+    start_date_value = status["start_date_value"]
+
+    # Extract the update date from the status
+    update_date = datetime.fromisoformat(status["update_date"])
+
+    # Calculate how long ago the last update was in seconds
+    seconds_since_update = (datetime.now().astimezone() - update_date).total_seconds()
+
+    # Get the update interval in seconds
+    update_interval_seconds = arguments.update_hours * 3600
+
+    # Check if the update interval since the last update has not been reached
+    if seconds_since_update < update_interval_seconds:
+
+        # Delay the next update by the remaining time until the update interval has been reached
+        time.sleep(update_interval_seconds - seconds_since_update)
+
+    # Run the main daemon loop
+    run_daemon(arguments, start_date_value)

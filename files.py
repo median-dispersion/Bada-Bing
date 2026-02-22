@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 import json
+import hashlib
 
 # =================================================================================================
 # Only keep allowed characters in file names
@@ -61,3 +62,51 @@ def save_image_data(
 
     # Return the image data
     return data
+
+# =================================================================================================
+# Get the checksum of a file
+# =================================================================================================
+def get_checksum(
+    file_path: Path,
+    algorithm: str = "sha256"
+) -> str:
+
+    # Set up the hash function
+    hash_function = hashlib.new(algorithm)
+
+    # Open the file
+    with open(file_path, "rb") as file:
+
+        # Read the file in chunks to avoid using too much memory
+        for chunk in iter(lambda: file.read(4096), b""):
+
+            # Update the has with the next chunk
+            hash_function.update(chunk)
+
+    # Return the file checksum
+    return hash_function.hexdigest()
+
+# =================================================================================================
+# Delete image data from disk
+# =================================================================================================
+def delete_image_data(
+    image_path: Path,
+    image_checksum_sha256: str,
+    metadata_path: Path | None = None
+) -> None:
+
+    # Check if the path exists and its a file
+    if image_path.exists() and image_path.is_file():
+
+        # Check if the image checksum matches
+        if image_checksum_sha256 == get_checksum(image_path, "sha256"):
+
+            # Delete the image file
+            image_path.unlink()
+
+            # Check if the metadata path is provided, exists and is a file
+            # Only do this if the image file was already checked as a sort of "safety" mechanism
+            if metadata_path is not None and metadata_path.exists() and metadata_path.is_file():
+
+                # Delete the metadata file
+                metadata_path.unlink()
