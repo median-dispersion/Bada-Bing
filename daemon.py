@@ -45,7 +45,7 @@ def run_daemon(
                 # Save the image data to disk and get the file paths
                 save_image_data(
                     data,
-                    arguments.image_directory,
+                    arguments.download_directory,
                     arguments.save_metadata
                 )
 

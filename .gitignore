@@ -2,8 +2,8 @@
 __venv__
 __pycache__
 
-# Ignore the default image output directory
-Images
+# Ignore the default download directory
+Downloads
 
 # Ignore SQLite3 database files
 *.db

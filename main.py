@@ -26,7 +26,7 @@ if __name__ == "__main__":
         data = get_metadata(
             arguments.region,
             arguments.day_index,
-            arguments.number_of_images,
+            arguments.images,
             arguments.request_timeout_seconds,
             arguments.request_attempts,
             arguments.request_attempt_delay_seconds
@@ -51,6 +51,6 @@ if __name__ == "__main__":
             # Save the image data to disk
             save_image_data(
                 data_entry,
-                arguments.image_directory,
+                arguments.download_directory,
                 arguments.save_metadata
             )
