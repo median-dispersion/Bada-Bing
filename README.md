@@ -39,7 +39,7 @@ Sets the starting day in the past from which images are downloaded. 0 represents
 ```
 --images {1,2,3,4,5,6,7,8}
 ```
-Sets the number of images that are downloaded. For example, 1 only downloads today's image, 2 downloads today's and yesterday's image, and so on. If --day_index is set to something different than 0, it will be N images downloaded starting from that day's index into the past. Ignored when --daemon is set. The default value is 1.
+Sets the number of images that are downloaded. For example, 1 only downloads today's image, 2 downloads today's and yesterday's image, and so on. If --day-index is set to something different than 0, it will be N images downloaded starting from that day's index into the past. Ignored when --daemon is set. The default value is 1.
 
 #### Resolution
 ```
@@ -66,6 +66,26 @@ Sets the directory path where the images are downloaded to. The default value is
 Set this flag if the image metadata should be saved in an accompanying JSON file.
 
 ### Daemon options
+
+### Logging options
+
+#### Verbose output
+```
+--verbose
+```
+Set this flag to enable the log output and get feedback messages.
+
+#### Log file
+```
+--log-file {path}
+```
+Sets the path of the log file. Only applies when --verbose is set. The default unset value will create no log file.
+
+#### Disable ANSI escape codes
+```
+--disable-escape-codes
+```
+Set this flag to disable ANSI escape codes when logging to the terminal. This can help with terminals that don't support escape codes. Only applies when --verbose is set. The default unset value is to use escape codes.
 
 #### Daemon mode
 ```

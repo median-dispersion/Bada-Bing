@@ -1,4 +1,5 @@
 from arguments import get_arguments
+import logger
 from database import initialize_database
 from daemon import start_daemon
 from bing import get_metadata, get_image_data
@@ -9,6 +10,11 @@ if __name__ == "__main__":
 
     # Get launch arguments
     arguments = get_arguments()
+
+    # Setup logger
+    logger.verbose = arguments.verbose
+    logger.file = arguments.log_file
+    logger.disable_escape_codes = arguments.disable_escape_codes
 
     # Check if running in daemon mode
     if arguments.daemon:

@@ -81,7 +81,7 @@ def get_arguments() -> argparse.Namespace:
         type = int,
         choices = range(1, 9),
         default = 1,
-        help = "Sets the number of images that are downloaded. For example, 1 only downloads today's image, 2 downloads today's and yesterday's image, and so on. If --day_index is set to something different than 0, it will be N images downloaded starting from that day's index into the past. Ignored when --daemon is set. The default value is 1."
+        help = "Sets the number of images that are downloaded. For example, 1 only downloads today's image, 2 downloads today's and yesterday's image, and so on. If --day-index is set to something different than 0, it will be N images downloaded starting from that day's index into the past. Ignored when --daemon is set. The default value is 1."
     )
 
     image_group.add_argument(
@@ -112,6 +112,29 @@ def get_arguments() -> argparse.Namespace:
         "--save-metadata",
         action="store_true",
         help = "Set this flag if the image metadata should be saved in an accompanying JSON file."
+    )
+
+    # Add logging specific launch arguments
+    logging_group = parser.add_argument_group("Logging options")
+
+    logging_group.add_argument(
+        "--verbose",
+        action="store_true",
+        help = "Set this flag to enable the log output and get feedback messages."
+    )
+
+    logging_group.add_argument(
+        "--log-file",
+        type = Path,
+        metavar = "{path}",
+        default = None,
+        help = "Sets the path of the log file. Only applies when --verbose is set. The default unset value will create no log file."
+    )
+
+    logging_group.add_argument(
+        "--disable-escape-codes",
+        action="store_true",
+        help = "Set this flag to disable ANSI escape codes when logging to the terminal. This can help with terminals that don't support escape codes. Only applies when --verbose is set. The default unset value is to use escape codes."
     )
 
     # Add daemon specific launch arguments
