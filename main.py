@@ -1,7 +1,7 @@
 from arguments import get_arguments
 import logger
 from database import initialize_database
-from daemon import start_daemon
+from daemon import run_daemon
 from bing import get_metadata, get_image_data
 from files import save_image_data
 
@@ -19,14 +19,18 @@ if __name__ == "__main__":
     # Check if running in daemon mode
     if arguments.daemon:
 
+        logger.info("Running in daemon mode")
+
         # Initialize the database
         initialize_database()
 
-        # Start the daemon
-        start_daemon(arguments)
+        # Run the daemon
+        run_daemon(arguments)
 
     # If not running in daemon mode
     else:
+
+        logger.info("Running in manual mode")
 
         # Get the metadata
         data = get_metadata(

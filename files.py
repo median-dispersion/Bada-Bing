@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 import json
 import hashlib
+import logger
 
 # =================================================================================================
 # Only keep allowed characters in file names
@@ -41,6 +42,8 @@ def save_image_data(
     # Construct the image filepath
     data["image_path"] = directory / f"{filename}.{data['file_format'].value}"
 
+    logger.info(f"Saving image to '{data['image_path']}'")
+
     # Save the image
     with open(data["image_path"], "wb") as file: file.write(data["image"])
 
@@ -57,8 +60,12 @@ def save_image_data(
             if key != "image"
         }
 
+        logger.info(f"Saving metadata to '{data['metadata_path']}'")
+
         # Save the image metadata in an accompanying JSON file
         with open(data["metadata_path"], "w", encoding="utf-8") as file: json.dump(metadata, file, indent=4)
+
+    logger.success("Successfully saved image data")
 
     # Return the image data
     return data
@@ -101,6 +108,8 @@ def delete_image_data(
         # Check if the image checksum matches
         if image_checksum_sha256 == get_checksum(image_path, "sha256"):
 
+            logger.info(f"Deleting image from '{image_path}'")
+
             # Delete the image file
             image_path.unlink()
 
@@ -108,5 +117,9 @@ def delete_image_data(
             # Only do this if the image file was already checked as a sort of "safety" mechanism
             if metadata_path is not None and metadata_path.exists() and metadata_path.is_file():
 
+                logger.info(f"Deleting metadata from '{metadata_path}'")
+
                 # Delete the metadata file
                 metadata_path.unlink()
+
+        logger.success("Successfully deleted image data")

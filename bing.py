@@ -3,6 +3,7 @@ import requests
 import time
 from datetime import datetime
 from hashlib import sha256
+import logger
 
 # =================================================================================================
 # Get metadata
@@ -32,6 +33,8 @@ def get_metadata(
 
         try:
 
+            logger.info(f"Attempt {attempt} trying to get metadata from '{url}?format={parameters['format']}&mkt={parameters['mkt']}&idx={parameters['idx']}&n={parameters['n']}'")
+
             # Request metadata
             response = requests.get(url=url, params=parameters, timeout=timeout_seconds)
             response.raise_for_status()
@@ -55,14 +58,22 @@ def get_metadata(
                     "end_date": data_entry["enddate"]
                 })
 
+            logger.success("Successfully gotten metadata")
+
             # Return the extracted metadata
             return metadata
 
         # If an exception occurs do nothing
-        except Exception: pass
+        except Exception as exception:
+
+            logger.error(f"Failed to get metadata, exception: {exception}")
+
+        logger.info(f"Next attempt to get metadata in {attempt_delay_seconds} second(s)")
 
         # Delay the next attempt
         time.sleep(attempt_delay_seconds)
+
+    logger.error(f"Could not get metadata in {attempts} attempt(s)")
 
     # Raise an exception if the maximum number of attempts have been reached
     raise Exception("Maximum number of request attempts reached!")
@@ -92,6 +103,8 @@ def get_image_data(
 
         try:
 
+            logger.info(f"Attempt {attempt} trying to get image data from '{url}'")
+
             # Request image
             response = requests.get(url=url, timeout=timeout_seconds)
             response.raise_for_status()
@@ -105,14 +118,22 @@ def get_image_data(
             # Add image data SHA-256 checksum
             data["checksum_sha256"] = sha256(data["image"]).hexdigest()
 
+            logger.success("Successfully gotten image data")
+
             # Return the image data
             return data
 
         # If an exception occurs do nothing
-        except Exception: pass
+        except Exception as exception:
+
+            logger.error(f"Failed to get image data, exception: {exception}")
+
+        logger.info(f"Next attempt to get image data in {attempt_delay_seconds} second(s)")
 
         # Delay the next attempt
         time.sleep(attempt_delay_seconds)
+
+    logger.error(f"Could not get image data in {attempts} attempt(s)")
 
     # Raise an exception if the maximum number of attempts have been reached
     raise Exception("Maximum number of request attempts reached!")

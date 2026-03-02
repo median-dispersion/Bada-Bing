@@ -65,8 +65,6 @@ Sets the directory path where the images are downloaded to. The default value is
 ```
 Set this flag if the image metadata should be saved in an accompanying JSON file.
 
-### Daemon options
-
 ### Logging options
 
 #### Verbose output
@@ -86,6 +84,8 @@ Sets the path of the log file. Only applies when --verbose is set. The default u
 --disable-escape-codes
 ```
 Set this flag to disable ANSI escape codes when logging to the terminal. This can help with terminals that don't support escape codes. Only applies when --verbose is set. The default unset value is to use escape codes.
+
+### Daemon options
 
 #### Daemon mode
 ```

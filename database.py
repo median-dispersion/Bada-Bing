@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
+import logger
 
 # =================================================================================================
 # Get a database session
@@ -47,6 +48,8 @@ def get_session():
 # Initialize the database
 # =================================================================================================
 def initialize_database() -> None:
+
+    logger.info("Initializing database")
 
     # Get a database session
     with get_session() as session:
@@ -97,3 +100,5 @@ def initialize_database() -> None:
                 metadata_path TEXT
             );
         """)
+
+    logger.success("Successfully initialize database")
